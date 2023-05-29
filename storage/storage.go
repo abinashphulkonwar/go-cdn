@@ -3,21 +3,36 @@ package storage
 import (
 	"crypto/md5"
 	"encoding/hex"
+	"encoding/json"
 	"os"
+	"time"
+
+	"github.com/patrickmn/go-cache"
 )
 
 type Storage struct {
 	Dir     string
 	MetaDir string
+	Cache   *cache.Cache
+}
+
+type MetaData struct {
+	ContentType   string `json:"Content-Type"`
+	ContentLength string `json:"Content-Length"`
+	Date          string `json:"Date"`
+	CacheControl  string `json:"Cache-Control"`
 }
 
 const Meta = "Meta"
 const Temp = "Temp"
 
 func New(Dir string, MetaDir string) *Storage {
+	c := cache.New(5*time.Minute, 10*time.Minute)
+
 	return &Storage{
 		Dir:     Dir,
 		MetaDir: MetaDir,
+		Cache:   c,
 	}
 }
 
@@ -50,7 +65,22 @@ func (s *Storage) DeleteFile() error {
 	return nil
 }
 func (s *Storage) GetFile(Key string) ([]byte, error) {
-	return s.Read(s.TempPath(Key))
+	path := s.TempPath(Key)
+
+	cacheKey := Temp + path
+
+	cahce, isFound := s.GetDataFromCache(cacheKey)
+	if isFound {
+		return cahce.([]byte), nil
+	}
+
+	data, err := s.Read(path)
+
+	if err != nil {
+		return nil, err
+	}
+	s.Cache.Set(cacheKey, data, cache.DefaultExpiration)
+	return data, nil
 }
 
 func (s *Storage) SetMetaData(key string, data []byte) error {
@@ -61,9 +91,36 @@ func (s *Storage) SetMetaData(key string, data []byte) error {
 	return nil
 }
 
-func (s *Storage) GetMetaData(Key string) ([]byte, error) {
-	buf, err := s.Read(s.MetaPath(Key))
-	return buf, err
+func (s *Storage) GetMetaData(Key string) (MetaData, bool, error) {
+	path := s.MetaPath(Key)
+	metaKey := Meta + path
+	metaData := MetaData{}
+	data, isFound := s.GetDataFromCache(metaKey)
+	if isFound {
+		return data.(MetaData), true, nil
+	}
+	buf, err := s.Read(path)
+	if err != nil {
+		return metaData, false, err
+	}
+
+	err = json.Unmarshal(buf, &metaData)
+
+	if err != nil {
+		return metaData, false, err
+	}
+
+	s.Cache.Set(metaKey, metaData, cache.DefaultExpiration)
+
+	return metaData, true, err
+}
+
+func (s *Storage) GetDataFromCache(key string) (interface{}, bool) {
+	data, found := s.Cache.Get(key)
+	if found {
+		return data, true
+	}
+	return data, false
 }
 
 func (s *Storage) TempPath(key string) string {
