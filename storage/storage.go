@@ -25,6 +25,8 @@ type MetaData struct {
 
 const Meta = "Meta"
 const Temp = "Temp"
+const MetaDir = "meta"
+const TempDir = "temp"
 
 func New(Dir string, MetaDir string) *Storage {
 	c := cache.New(5*time.Minute, 10*time.Minute)
@@ -67,19 +69,17 @@ func (s *Storage) DeleteFile() error {
 func (s *Storage) GetFile(Key string) ([]byte, error) {
 	path := s.TempPath(Key)
 
-	cacheKey := Temp + path
-
-	cahce, isFound := s.GetDataFromCache(cacheKey)
+	cahce, isFound := s.GetDataFromCache(Key)
 	if isFound {
 		return cahce.([]byte), nil
 	}
 
 	data, err := s.Read(path)
 
-	if err != nil {
+	if err != nil || len(data) == 0 {
 		return nil, err
 	}
-	s.Cache.Set(cacheKey, data, cache.DefaultExpiration)
+	s.Cache.Set(Key, data, cache.DefaultExpiration)
 	return data, nil
 }
 
@@ -100,7 +100,7 @@ func (s *Storage) GetMetaData(Key string) (MetaData, bool, error) {
 		return data.(MetaData), true, nil
 	}
 	buf, err := s.Read(path)
-	if err != nil {
+	if err != nil || len(buf) == 0 {
 		return metaData, false, err
 	}
 
