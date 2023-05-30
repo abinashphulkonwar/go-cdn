@@ -48,9 +48,11 @@ func (s *Storage) Write(key string, data []byte) error {
 func (s *Storage) Read(key string) ([]byte, error) {
 	buf, err := os.ReadFile(key)
 	if err != nil {
+
 		if os.IsNotExist(err) {
 			return nil, nil
 		}
+
 		return nil, err
 	}
 	return buf, nil
