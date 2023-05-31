@@ -17,11 +17,16 @@ func App() {
 	})
 	storageSession := storage.New(storage.TempDir+"/", storage.MetaDir+"/")
 	app.Use(logger.New())
-	app.Get("*", func(c *fiber.Ctx) error {
-		return handlers.ReadFileHandler(c, storageSession)
-	}, func(c *fiber.Ctx) error {
-		return handlers.Proxy(c, storageSession)
-	})
+	app.Get("*",
+		func(c *fiber.Ctx) error {
+			return handlers.ReadFileHandler(c, storageSession)
+		}, func(c *fiber.Ctx) error {
+			return handlers.ProxyGet(c, storageSession)
+		},
+		func(c *fiber.Ctx) error {
+			return handlers.ProxyHandler(c, storageSession)
+		},
+	)
 
 	app.Listen(":3004")
 }

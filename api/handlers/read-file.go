@@ -8,7 +8,7 @@ import (
 )
 
 func ReadFileHandler(c *fiber.Ctx, storageSession *storage.Storage) error {
-	path := c.BaseURL() + c.Path()
+	path := c.BaseURL() + c.OriginalURL()
 	buf, err := storageSession.GetFile(path)
 	if err != nil {
 		return err
