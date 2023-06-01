@@ -17,7 +17,7 @@ func App() {
 	})
 	storageSession := storage.New(storage.TempDir+"/", storage.MetaDir+"/")
 	app.Use(logger.New())
-	app.Get("*",
+	app.All("*",
 		func(c *fiber.Ctx) error {
 			return handlers.ReadFileHandler(c, storageSession)
 		}, func(c *fiber.Ctx) error {

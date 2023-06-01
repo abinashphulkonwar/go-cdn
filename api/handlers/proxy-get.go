@@ -12,7 +12,6 @@ import (
 func ProxyGet(c *fiber.Ctx, storageSession *storage.Storage) error {
 
 	url := "https://departmentofpoliticalsciencehcgdcollege.azurewebsites.net" + c.OriginalURL()
-
 	if c.Method() != fiber.MethodGet {
 		return c.Next()
 	}
@@ -22,7 +21,6 @@ func ProxyGet(c *fiber.Ctx, storageSession *storage.Storage) error {
 	if err != nil {
 		return err
 	}
-
 	for key, value := range c.GetReqHeaders() {
 		if key == fiber.HeaderAccept || key == fiber.HeaderAcceptEncoding || key == fiber.HeaderAcceptLanguage {
 			continue
@@ -33,7 +31,6 @@ func ProxyGet(c *fiber.Ctx, storageSession *storage.Storage) error {
 	client := &http.Client{}
 
 	res, err := client.Do(req)
-
 	if err != nil {
 		return err
 	}
@@ -47,12 +44,7 @@ func ProxyGet(c *fiber.Ctx, storageSession *storage.Storage) error {
 	status := res.StatusCode
 
 	key := c.BaseURL() + c.Path()
-	if status == 200 {
-		err = storageSession.WriteFile(key, body)
-		if err != nil {
-			return err
-		}
-	}
+
 	headers := make(map[string]string)
 	headers["Content-Type"] = res.Header.Get("Content-Type")
 	headers["Content-Length"] = res.Header.Get("Content-Length")
@@ -64,9 +56,22 @@ func ProxyGet(c *fiber.Ctx, storageSession *storage.Storage) error {
 		println(err)
 		return err
 	}
-	if status == 200 {
+
+	isCahced := true
+
+	if res.Header.Get(fiber.HeaderCacheControl) == "no-cache" {
+		isCahced = false
+	}
+
+	if status == 200 && isCahced {
+		err = storageSession.WriteFile(key, body)
+		if err != nil {
+			return err
+		}
 		storageSession.SetMetaData(key, jsonData)
+
 	}
 	c.Set("Content-type", headers["Content-Type"])
+	c.Response().Header.Del(fiber.HeaderServer)
 	return c.Send(body)
 }
