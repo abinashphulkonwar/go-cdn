@@ -44,7 +44,7 @@ func ReadFileHandler(c *fiber.Ctx, storageSession *storage.Storage) error {
 	}
 
 	c.Set(fiber.HeaderContentDisposition, "inline")
-
+	c.Response().Header.Del(fiber.HeaderServer)
 	return c.SendStream(bytes.NewReader(buf), len(buf))
 
 }
