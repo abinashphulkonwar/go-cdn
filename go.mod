@@ -4,6 +4,8 @@ go 1.20
 
 require github.com/gofiber/fiber/v2 v2.46.0
 
+require github.com/jasonlvhit/gocron v0.0.1 // indirect
+
 require (
 	github.com/andybalholm/brotli v1.0.5 // indirect
 	github.com/google/uuid v1.3.0 // indirect
