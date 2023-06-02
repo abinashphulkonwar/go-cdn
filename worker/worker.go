@@ -112,6 +112,8 @@ func MetaDataCheck(path string) {
 	}
 }
 
-func Worker() {
-	gocron.Every(10).Minutes().Do(MetaDataCheck)
+func Worker(path string) {
+	gocron.Every(10).Minutes().Do(func() {
+		MetaDataCheck(path)
+	})
 }
