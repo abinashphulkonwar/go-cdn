@@ -5,7 +5,7 @@ import (
 	"github.com/gofiber/fiber/v2"
 )
 
-func MetaDataCheckHandler(c *fiber.Ctx, config service.Config) error {
+func MethodCheckHandler(c *fiber.Ctx, config service.Config) error {
 
 	method := c.Method()
 
