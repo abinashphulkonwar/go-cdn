@@ -6,8 +6,8 @@ import (
 	"github.com/gofiber/fiber/v2/middleware/proxy"
 )
 
-func ProxyHandler(c *fiber.Ctx, storageSession *storage.Storage) error {
-	targetURL := "https://departmentofpoliticalsciencehcgdcollege.azurewebsites.net"
+func ProxyHandler(c *fiber.Ctx, storageSession *storage.Storage, origin string) error {
+	targetURL := origin
 	if c.Method() == fiber.MethodGet {
 		return &fiber.Error{
 			Message: "ProxyHandler: Method not allowed",
