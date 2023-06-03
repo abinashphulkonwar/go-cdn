@@ -9,9 +9,9 @@ import (
 	"github.com/gofiber/fiber/v2"
 )
 
-func ProxyGet(c *fiber.Ctx, storageSession *storage.Storage) error {
+func ProxyGet(c *fiber.Ctx, storageSession *storage.Storage, origin string) error {
 
-	url := "https://departmentofpoliticalsciencehcgdcollege.azurewebsites.net" + c.OriginalURL()
+	url := origin + c.OriginalURL()
 	if c.Method() != fiber.MethodGet {
 		return c.Next()
 	}
