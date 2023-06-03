@@ -8,8 +8,10 @@ import (
 )
 
 func main() {
+	configuration := service.Configuration()
+
 	service.InitDir(storage.TempDir)
 	service.InitDir(storage.MetaDir)
-	api.App()
-	worker.Worker(storage.MetaDir)
+	api.App(configuration)
+	go worker.Worker(storage.MetaDir)
 }
