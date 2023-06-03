@@ -14,8 +14,9 @@ func App(config service.Config) {
 	storageSession := storage.New(storage.TempDir+"/", storage.MetaDir+"/")
 
 	app.Use(logger.New())
+
 	app.Use(func(c *fiber.Ctx) error {
-		return handlers.MetaDataCheckHandler(c, config)
+		return handlers.MethodCheckHandler(c, config)
 	})
 
 	app.All("*",
