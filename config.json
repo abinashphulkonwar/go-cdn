@@ -1,0 +1,12 @@
+{
+    "origin": "https://departmentofpoliticalsciencehcgdcollege.azurewebsites.net",
+    "methods": [
+        "GET",
+        "POST"
+    ],
+    "cache": {
+        "TTL": 3600,
+        "invalidation-path": "/api/in-validateCache",
+        "token": "token"
+    }
+}
