@@ -2,6 +2,7 @@ package api
 
 import (
 	"github.com/abinashphulkonwar/go-cdn/api/handlers"
+	"github.com/abinashphulkonwar/go-cdn/api/middleware"
 	"github.com/abinashphulkonwar/go-cdn/service"
 	"github.com/abinashphulkonwar/go-cdn/storage"
 	"github.com/gofiber/fiber/v2"
@@ -15,11 +16,18 @@ func App(config service.Config) {
 
 	app.Use(logger.New())
 
-	app.Use(func(c *fiber.Ctx) error {
-		return handlers.MethodCheckHandler(c, config)
-	})
+	if config.Cache.InvalidationPath != "" {
+		app.Post(config.Cache.InvalidationPath, func(c *fiber.Ctx) error {
+			return middleware.IsAuthenticated(c, config)
+		}, func(c *fiber.Ctx) error {
+			return handlers.InvalidCacheHandler(c, storageSession, origin)
+		})
+	}
 
 	app.All("*",
+		func(c *fiber.Ctx) error {
+			return middleware.MethodCheckHandler(c, config)
+		},
 		func(c *fiber.Ctx) error {
 			return handlers.ReadFileHandler(c, storageSession)
 		}, func(c *fiber.Ctx) error {
@@ -29,10 +37,6 @@ func App(config service.Config) {
 			return handlers.ProxyHandler(c, storageSession, origin)
 		},
 	)
-	if config.Cache.InvalidationPath != "" {
-		app.All(config.Cache.InvalidationPath, func(c *fiber.Ctx) error {
-			return handlers.InvalidCacheHandler(c, storageSession, origin)
-		})
-	}
+
 	app.Listen(":3004")
 }
