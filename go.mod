@@ -4,7 +4,10 @@ go 1.20
 
 require github.com/gofiber/fiber/v2 v2.46.0
 
-require github.com/jasonlvhit/gocron v0.0.1 // indirect
+require (
+	github.com/golang-jwt/jwt/v5 v5.0.0 // indirect
+	github.com/jasonlvhit/gocron v0.0.1 // indirect
+)
 
 require (
 	github.com/andybalholm/brotli v1.0.5 // indirect
