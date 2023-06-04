@@ -65,9 +65,50 @@ func (s *Storage) WriteFile(key string, data []byte) error {
 	}
 	return nil
 }
-func (s *Storage) DeleteFile() error {
+func (s *Storage) DeleteFile(key string) error {
+
+	err := os.Remove(key)
+	if err != nil {
+		isExist := os.IsNotExist(err)
+		if isExist {
+			return nil
+		}
+		return err
+	}
 	return nil
 }
+
+func (s *Storage) DeleteMeta(key string) error {
+
+	err := s.DeleteFile(s.MetaPath(key))
+	if err != nil {
+		return err
+	}
+	return nil
+}
+func (s *Storage) DeleteTemp(key string) error {
+	err := s.DeleteFile(s.TempPath(key))
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (s *Storage) Delete(key string) error {
+
+	err := s.DeleteFile(s.TempPath(key))
+	if err != nil {
+		return err
+	}
+
+	err = s.DeleteFile(s.MetaPath(key))
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func (s *Storage) GetFile(Key string) ([]byte, error) {
 	path := s.TempPath(Key)
 
