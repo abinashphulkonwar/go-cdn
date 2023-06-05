@@ -9,7 +9,7 @@ import (
 	"github.com/gofiber/fiber/v2/middleware/logger"
 )
 
-func App(config service.Config) {
+func App(config service.Config) *fiber.App {
 	app := fiber.New()
 	origin := config.Origin
 	storageSession := storage.New(storage.TempDir+"/", storage.MetaDir+"/")
@@ -38,5 +38,5 @@ func App(config service.Config) {
 		},
 	)
 
-	app.Listen(":3004")
+	return app
 }
