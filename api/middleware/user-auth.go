@@ -8,6 +8,8 @@ import (
 	"github.com/gofiber/fiber/v2"
 )
 
+const Bearer = "Bearer"
+
 func IsAuthenticated(c *fiber.Ctx, config service.Config) error {
 	token := c.Get("Authorization")
 
@@ -16,16 +18,15 @@ func IsAuthenticated(c *fiber.Ctx, config service.Config) error {
 	}
 
 	tokenArray := strings.Split(token, " ")
-
 	if len(tokenArray) != 2 {
 		return internal.ResponseHandler(c, internal.ERROR, fiber.StatusUnauthorized, "Unauthorized", nil)
 	}
 
-	if tokenArray[0] != "Bearer" {
+	if tokenArray[0] != Bearer {
 		return internal.ResponseHandler(c, internal.ERROR, fiber.StatusUnauthorized, "Unauthorized", nil)
 	}
 
-	user, err := service.VerifyToken(tokenArray[1], []byte(config.Cache.Token))
+	user, err := service.VerifyToken(tokenArray[1], config.Cache.SecretKey)
 
 	if err != nil {
 		return internal.ResponseHandler(c, internal.ERROR, fiber.StatusUnauthorized, err.Error(), nil)

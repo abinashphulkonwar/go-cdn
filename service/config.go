@@ -12,6 +12,7 @@ type CacheConfiguration struct {
 	TTL              int    `json:"ttl"` // in seconds
 	InvalidationPath string `json:"invalidation-path"`
 	Token            string `json:"token"`
+	SecretKey        []byte
 }
 
 type Config struct {
@@ -52,6 +53,7 @@ func Configuration() Config {
 		if cache.Cache.Token == "" {
 			panic("token not provided")
 		}
+		cache.Cache.SecretKey = []byte(cache.Cache.Token)
 		if isStartWith := strings.HasPrefix(cache.Cache.InvalidationPath, "/"); isStartWith {
 			cache.Cache.InvalidationPath = cache.Cache.InvalidationPath[1:]
 		}

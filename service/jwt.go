@@ -3,6 +3,7 @@ package service
 import (
 	"errors"
 	"fmt"
+	"time"
 
 	"github.com/golang-jwt/jwt/v5"
 )
@@ -28,4 +29,21 @@ func VerifyToken(tokenString string, secretKey []byte) (jwt.MapClaims, error) {
 	claims := token.Claims.(jwt.MapClaims)
 
 	return claims, nil
+}
+
+func GetJwtToken(payload map[string]string, secretKey []byte) (string, error) {
+	token := jwt.New(jwt.SigningMethodHS256)
+
+	claims := token.Claims.(jwt.MapClaims)
+	claims["iat"] = time.Now().Unix()
+	claims["exp"] = time.Now().Add(time.Hour).Unix()
+	for key, val := range payload {
+		claims[key] = val
+	}
+	tokenString, err := token.SignedString(secretKey)
+	if err != nil {
+		return "", nil
+	}
+
+	return tokenString, nil
 }

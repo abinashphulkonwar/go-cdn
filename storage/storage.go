@@ -69,6 +69,7 @@ func (s *Storage) DeleteFile(key string) error {
 
 	err := os.Remove(key)
 	if err != nil {
+
 		isExist := os.IsNotExist(err)
 		if isExist {
 			return nil
@@ -96,16 +97,15 @@ func (s *Storage) DeleteTemp(key string) error {
 
 func (s *Storage) Delete(key string) error {
 
-	err := s.DeleteFile(s.TempPath(key))
+	err := s.DeleteMeta(key)
 	if err != nil {
 		return err
 	}
 
-	err = s.DeleteFile(s.MetaPath(key))
+	err = s.DeleteTemp(key)
 	if err != nil {
 		return err
 	}
-
 	return nil
 }
 
