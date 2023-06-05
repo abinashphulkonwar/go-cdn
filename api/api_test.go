@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"net/http"
 	"testing"
+	"time"
 
 	"github.com/abinashphulkonwar/go-cdn/api"
 	"github.com/abinashphulkonwar/go-cdn/service"
@@ -32,7 +33,7 @@ func TestInternale(t *testing.T) {
 		},
 	})
 
-	token, err := service.GetJwtToken(nil, []byte(secretKey))
+	token, err := service.GetJwtToken(nil, []byte(secretKey), time.Now().Add(time.Hour).Unix())
 
 	if err != nil {
 		t.Error(err)

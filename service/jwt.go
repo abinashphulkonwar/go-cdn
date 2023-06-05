@@ -31,12 +31,18 @@ func VerifyToken(tokenString string, secretKey []byte) (jwt.MapClaims, error) {
 	return claims, nil
 }
 
-func GetJwtToken(payload map[string]string, secretKey []byte) (string, error) {
+func GetJwtToken(payload map[string]string, secretKey []byte, exp int64) (string, error) {
 	token := jwt.New(jwt.SigningMethodHS256)
 
 	claims := token.Claims.(jwt.MapClaims)
+
 	claims["iat"] = time.Now().Unix()
-	claims["exp"] = time.Now().Add(time.Hour).Unix()
+	claims["exp"] = exp
+
+	if exp == 0 {
+		claims["exp"] = time.Now().Add(time.Hour).Unix()
+	}
+
 	for key, val := range payload {
 		claims[key] = val
 	}
