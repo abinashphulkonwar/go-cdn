@@ -37,10 +37,11 @@ func GetJwtToken(payload map[string]string, secretKey []byte, exp int64) (string
 	claims := token.Claims.(jwt.MapClaims)
 
 	claims["iat"] = time.Now().Unix()
-	claims["exp"] = exp
 
 	if exp == 0 {
 		claims["exp"] = time.Now().Add(time.Hour).Unix()
+	} else {
+		claims["exp"] = exp
 	}
 
 	for key, val := range payload {
