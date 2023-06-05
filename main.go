@@ -12,6 +12,9 @@ func main() {
 
 	service.InitDir(storage.TempDir)
 	service.InitDir(storage.MetaDir)
-	api.App(configuration)
+
+	app := api.App(configuration)
+	app.Listen(":3004")
+
 	go worker.Worker(storage.MetaDir)
 }
