@@ -54,6 +54,7 @@ func TestInternale(t *testing.T) {
 	if err != nil {
 		t.Error(err)
 	}
+
 	req.Header.Add(fiber.HeaderAuthorization, "Bearer "+token)
 
 	res, err := app.Test(req, 10000)
