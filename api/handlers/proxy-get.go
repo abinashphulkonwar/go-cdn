@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"io"
 	"net/http"
+	"strings"
 
 	"github.com/abinashphulkonwar/go-cdn/storage"
 	"github.com/gofiber/fiber/v2"
@@ -51,6 +52,7 @@ func ProxyGet(c *fiber.Ctx, storageSession *storage.Storage, origin string) erro
 	headers["Date"] = res.Header.Get("Date")
 	headers["Content-Encoding"] = res.Header.Get("Content-Disposition")
 	headers["Cache-Control"] = res.Header.Get("Cache-Control")
+
 	jsonData, err := json.Marshal(headers)
 	if err != nil {
 		println(err)
@@ -64,7 +66,17 @@ func ProxyGet(c *fiber.Ctx, storageSession *storage.Storage, origin string) erro
 	}
 
 	if status == 200 && isCahced {
-		err = storageSession.WriteFile(key, body)
+		ContentType, isFound := headers["Content-Type"]
+
+		if isFound {
+			data := strings.Split(ContentType, ";")
+			if data[0] != "" {
+				ContentType = data[0]
+			}
+
+		}
+
+		err = storageSession.WriteFile(key, body, ContentType)
 		if err != nil {
 			return err
 		}
