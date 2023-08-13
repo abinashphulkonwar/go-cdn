@@ -38,11 +38,6 @@ func ReadFileHandler(c *fiber.Ctx, storageSession *storage.Storage) error {
 		c.Set(fiber.HeaderContentLength, meta.ContentLength)
 	}
 
-	if len(buf) < 148848 {
-		println("sending")
-		return c.Send(buf)
-	}
-
 	c.Set(fiber.HeaderContentDisposition, "inline")
 	c.Response().Header.Del(fiber.HeaderServer)
 	return c.SendStream(bytes.NewReader(buf), len(buf))
