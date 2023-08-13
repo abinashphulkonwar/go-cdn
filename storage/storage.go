@@ -8,12 +8,19 @@ import (
 	"time"
 
 	"github.com/patrickmn/go-cache"
+	"github.com/tdewolff/minify/v2"
+	"github.com/tdewolff/minify/v2/css"
+	"github.com/tdewolff/minify/v2/html"
+	"github.com/tdewolff/minify/v2/js"
+	MinifyJson "github.com/tdewolff/minify/v2/json"
+	"github.com/tdewolff/minify/v2/svg"
 )
 
 type Storage struct {
 	Dir     string
 	MetaDir string
 	Cache   *cache.Cache
+	Minify  *minify.M
 }
 
 type MetaData struct {
@@ -31,10 +38,18 @@ const TempDir = "temp"
 func New(Dir string, MetaDir string) *Storage {
 	c := cache.New(5*time.Minute, 10*time.Minute)
 
+	m := minify.New()
+	m.AddFunc(MediaType.HTML, html.Minify)
+	m.AddFunc(MediaType.CSS, css.Minify)
+	m.AddFunc(MediaType.IMAGE, svg.Minify)
+	m.AddFuncRegexp(MediaType.JS, js.Minify)
+	m.AddFuncRegexp(MediaType.JSON, MinifyJson.Minify)
+
 	return &Storage{
 		Dir:     Dir,
 		MetaDir: MetaDir,
 		Cache:   c,
+		Minify:  m,
 	}
 }
 
@@ -59,8 +74,15 @@ func (s *Storage) Read(key string) ([]byte, error) {
 	return buf, nil
 }
 
-func (s *Storage) WriteFile(key string, data []byte) error {
-	err := s.Write(s.TempPath(key), data)
+func (s *Storage) WriteFile(key string, data []byte, mediaType string) error {
+	media_data := data
+	compress_data, err := s.Compress(data, mediaType)
+	if err != nil {
+		println("error: ", err.Error())
+	} else {
+		media_data = compress_data
+	}
+	err = s.Write(s.TempPath(key), media_data)
 	if err != nil {
 		return err
 	}
@@ -178,4 +200,22 @@ func (s *Storage) MetaPath(key string) string {
 	hashString := hex.EncodeToString(hash[:])
 	path := s.MetaDir + hashString
 	return path
+}
+func (s *Storage) Compress(data []byte, mediaType string) ([]byte, error) {
+	if mediaType == MediaType.HTML {
+		return s.Minify.Bytes(MediaType.HTML, data)
+	}
+	if mediaType == MediaType.CSS {
+		return s.Minify.Bytes(MediaType.CSS, data)
+
+	}
+	if mediaType == MediaType.IMAGE {
+		return s.Minify.Bytes(MediaType.CSS, data)
+	}
+
+	if MediaType.JS.MatchString(mediaType) || MediaType.JSON.MatchString(mediaType) {
+		return s.Minify.Bytes(mediaType, data)
+	}
+
+	return data, nil
 }

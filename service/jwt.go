@@ -47,7 +47,9 @@ func GetJwtToken(payload map[string]string, secretKey []byte, exp int64) (string
 	for key, val := range payload {
 		claims[key] = val
 	}
+
 	tokenString, err := token.SignedString(secretKey)
+
 	if err != nil {
 		return "", nil
 	}
